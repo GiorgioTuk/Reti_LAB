@@ -2,6 +2,18 @@
 #include <stdlib.h>
 #include <string.h>
 #include "database.h"
+
+/*
+In questa implementazione non gestisco il caso di valori duplicati.
+La logica dietro l'implemntazione delle funzioni è la seguente:
+
+1. inserimento -> gli alberi generati dall'inserimento di stringhe e interi sono ordinati rispettivamente:
+    - In base all'ordine lessicografico le stringhe di ordine minore vengono messe nel sotto albero sinistro,
+      quelle di ordine maggiore vengono messe nel sotto albero destro
+    - Come punto sopra ma per gli interi
+2. Ricerca -> Ricarca stringhe e valori con la stessa logica dell'inserimento
+*/
+
 //funzioni per inserire nodi nei vari alberi
 IndexNodeString* insertIndexNodeString(IndexNodeString* node, char* value, Persona* persona);
 IndexNodeInt* insertIndexNodeInt(IndexNodeInt* node, int value, Persona* persona);
@@ -11,7 +23,6 @@ Persona* findByNameHelper(IndexNodeString* node, char* name);
 Persona* findBySurnameHelper(IndexNodeString* node, char* surname);
 Persona* findByAddressHelper(IndexNodeString* node, char* address);
 Persona* findByAgeHelper(IndexNodeInt* node, int age);
-
 
 IndexNodeString* insertIndexNodeString(IndexNodeString* node, char* value, Persona* persona) {
     if (node == NULL) {
@@ -25,7 +36,6 @@ IndexNodeString* insertIndexNodeString(IndexNodeString* node, char* value, Perso
     } else if (strcmp(value, node->value) > 0) {
         node->right = insertIndexNodeString(node->right, value, persona);
     }
-    // Non inserire duplicati o gestisci come preferisci
     return node;
 }
 
@@ -34,22 +44,18 @@ IndexNodeInt* insertIndexNodeInt(IndexNodeInt* node, int value, Persona* persona
         node = (IndexNodeInt*)malloc(sizeof(IndexNodeInt));
         node->value = value;
         node->left = node->right = NULL;
-        node->persona = persona; // Collegamento diretto al record Persona
+        node->persona = persona; // Collega il nodo a Persona
         return node;
     } else if (value < node->value) {
         node->left = insertIndexNodeInt(node->left, value, persona);
     } else if (value > node->value) {
         node->right = insertIndexNodeInt(node->right, value, persona);
     }
-    // Gestione dei duplicati omessa per brevità
+    
     return node;
 }
 // Inserisce una nuova Persona nel database
 void insert(Database * database, Persona * persona) {
-    // Implementazione dell'inserimento qui
-    // Nota: Questo pseudocodice mostra come iniziare. Dovrai implementare la logica per
-    // aggiungere il nodo agli alberi degli indici, gestendo i casi in cui l'albero è vuoto
-    // e quando non lo è, seguendo le regole di un albero binario di ricerca.
     database->name = insertIndexNodeString(database->name, persona->name, persona);
     database->surname = insertIndexNodeString(database->surname, persona->surname, persona);
     database->address = insertIndexNodeString(database->address, persona->address, persona);
@@ -58,7 +64,6 @@ void insert(Database * database, Persona * persona) {
 }
 
 //FIND BY NAME
-
 Persona* findByNameHelper(IndexNodeString* node, char* name) {
     if (node == NULL) {
         return NULL; // Nome non trovato
@@ -78,7 +83,6 @@ Persona* findByName(Database * database, char * name) {
 }
 
 //FIND BY SURNAME
-
 Persona* findBySurnameHelper(IndexNodeString* node, char* surname) {
     if (node == NULL) {
         return NULL; // Nome non trovato
@@ -98,7 +102,6 @@ Persona* findBySurname(Database * database, char * surname) {
 }
 
 //FIND BY ADDRESS
-
 Persona* findByAddressHelper(IndexNodeString* node, char* address) {
     if (node == NULL) {
         return NULL; // Nome non trovato
@@ -128,9 +131,6 @@ Persona* findByAgeHelper(IndexNodeInt* node, int age) {
     } else if (age > node->value) {
         return findByAgeHelper(node->right, age); // Cerca nel sottoalbero destro
     } else {
-        // Età trovata, restituisce il puntatore a Persona
-        // Questo presuppone che ci sia al massimo una Persona per ogni età. Se ci sono più persone
-        // con la stessa età, questa implementazione restituirà solo la prima trovata.
         return node->persona;
     }
 }
@@ -138,8 +138,3 @@ Persona* findByAgeHelper(IndexNodeInt* node, int age) {
 Persona* findByAge(Database * database, int age) {
     return findByAgeHelper(database->age, age);
 }
-
-
-
-
-
